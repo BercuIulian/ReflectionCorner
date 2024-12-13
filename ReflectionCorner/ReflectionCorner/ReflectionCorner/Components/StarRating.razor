@@ -1,0 +1,21 @@
+﻿<div>
+    @for (int i = 1; i <= 5; i++)
+    {
+        int rating = i;
+        <span class="star @(rating <= Value ? "filled" : "")" @onclick="() => OnClick(rating)">&#9733;</span>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> ValueChanged { get; set; }
+
+    private async Task OnClick(int rating)
+    {
+        Value = rating;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

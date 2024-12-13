@@ -1,0 +1,92 @@
+﻿@page "/profile"
+@using ReflectionCorner.Areas.Identity
+@using System.Security.Claims
+@using ReflectionCorner.Data
+@attribute [Authorize]
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Context
+@inject NavigationManager NavigationManager
+
+<h2>Your Profile</h2>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@(currentUser?.FirstName ?? "") @(currentUser?.LastName ?? "")</h5>
+        <p class="card-text">Username: @username</p>
+        <p class="card-text">Email: @email</p>
+        <p class="card-text">Contact: @(currentUser?.Contact ?? "Not provided")</p>
+        <p class="card-text">Profile Status: @(currentUser?.IsPublic ?? false ? "Public" : "Private")</p>
+    </div>
+</div>
+
+<div class="mt-3">
+    <button class="btn btn-primary" @onclick="NavigateToEditProfile">Edit Profile</button>
+    <button class="btn btn-danger ml-2" @onclick="ShowDeleteConfirmation">Delete Profile</button>
+</div>
+
+@if (showDeleteConfirmation)
+{
+    <DeleteConfirmationDialog 
+        OnConfirm="DeleteProfile"
+        OnCancel="CancelDelete"
+        OnPasswordVerify="VerifyPassword"
+        ErrorMessage="@errorMessage"
+    />
+}
+
+@code {
+    private string username = "";
+    private string email = "";
+    private bool showDeleteConfirmation = false;
+    private string errorMessage = "";
+    private User currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            username = user.Identity.Name;
+            var userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            currentUser = await Context.Users.FindAsync(userId);
+            email = currentUser.Email;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+    private void NavigateToEditProfile()
+    {
+        NavigationManager.NavigateTo("/edit-profile");
+    }
+
+    private void ShowDeleteConfirmation()
+    {
+        showDeleteConfirmation = true;
+        errorMessage = "";
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteConfirmation = false;
+        errorMessage = "";
+    }
+
+    private async Task<bool> VerifyPassword(string password)
+    {
+        return currentUser.Password == password;
+    }
+
+    private async Task DeleteProfile()
+    {
+        Context.Users.Remove(currentUser);
+        await Context.SaveChangesAsync();
+
+        ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/");
+    }
+}

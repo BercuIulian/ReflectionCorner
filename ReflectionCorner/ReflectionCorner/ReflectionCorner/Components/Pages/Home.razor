@@ -1,0 +1,34 @@
+﻿@page "/home"
+@attribute [Authorize]
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<h1>Welcome to ReflectionCorner</h1>
+
+@if (!string.IsNullOrEmpty(username))
+{
+    <p>Hi @username, welcome to ReflectionCorner!</p>
+}
+else
+{
+    <p>Welcome to ReflectionCorner!</p>
+}
+
+@code {
+    private string username = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            username = user.Identity.Name;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+}

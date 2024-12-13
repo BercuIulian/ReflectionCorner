@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReflectionCorner", "ReflectionCorner\ReflectionCorner\ReflectionCorner.csproj", "{D343A5F2-8AD4-48E0-B4DA-86F3923D31C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReflectionCorner.Client", "ReflectionCorner\ReflectionCorner.Client\ReflectionCorner.Client.csproj", "{546BE041-1EEF-4C71-8DCE-994FAF3E0ED7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D343A5F2-8AD4-48E0-B4DA-86F3923D31C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D343A5F2-8AD4-48E0-B4DA-86F3923D31C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D343A5F2-8AD4-48E0-B4DA-86F3923D31C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D343A5F2-8AD4-48E0-B4DA-86F3923D31C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{546BE041-1EEF-4C71-8DCE-994FAF3E0ED7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{546BE041-1EEF-4C71-8DCE-994FAF3E0ED7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{546BE041-1EEF-4C71-8DCE-994FAF3E0ED7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{546BE041-1EEF-4C71-8DCE-994FAF3E0ED7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {96FD1D4C-6DBA-4087-A2EE-6E4537BD15F8}
+	EndGlobalSection
+EndGlobal

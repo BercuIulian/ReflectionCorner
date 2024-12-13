@@ -1,0 +1,200 @@
+﻿@page "/add-review"
+@page "/edit-review/{ReviewId:int}"
+@inject ApplicationDbContext Context
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>@(ReviewId.HasValue ? "Edit" : "Add") Review</h3>
+
+<EditForm Model="@review" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if (!ReviewId.HasValue)
+    {
+        <div class="form-group">
+            <label for="type">Type:</label>
+            <InputSelect id="type" @bind-Value="review.Type" class="form-control">
+                <option value="@ReviewType.None">Select a type</option>
+                <option value="@ReviewType.Movie">Movie</option>
+                <option value="@ReviewType.TVShow">TV Show</option>
+                <option value="@ReviewType.Episode">Episode</option>
+            </InputSelect>
+        </div>
+    }
+
+    @if (review.Type == ReviewType.Movie || (ReviewId.HasValue && review.Type != ReviewType.TVShow))
+    {
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <InputText id="title" @bind-Value="review.Title" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="content">Review:</label>
+            <InputTextArea id="content" @bind-Value="review.Content" class="form-control" rows="5" />
+        </div>
+
+        <div class="form-group">
+            <label>Rating:</label>
+            <StarRating @bind-Value="review.Rating" />
+        </div>
+    }
+    else if (review.Type == ReviewType.TVShow)
+    {
+        <div class="form-group">
+            <label for="tvShowName">TV Show Name:</label>
+            <InputText id="tvShowName" @bind-Value="review.Title" class="form-control" />
+        </div>
+    }
+    else if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
+    {
+        <div class="form-group">
+            <label for="tvShowSelect">TV Show:</label>
+            <InputSelect id="tvShowSelect" @bind-Value="review.ParentId" class="form-control">
+                <option value="">Select a TV Show</option>
+                @foreach (var tvShow in tvShows)
+                {
+                    <option value="@tvShow.Id">@tvShow.Title</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label for="episodeName">Episode Name:</label>
+            <InputText id="episodeName" @bind-Value="review.Title" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="episodeNumber">Episode Number:</label>
+            <InputNumber id="episodeNumber" @bind-Value="episodeNumber" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="episodeReview">Review:</label>
+            <InputTextArea id="episodeReview" @bind-Value="review.Content" class="form-control" rows="5" />
+        </div>
+
+        <div class="form-group">
+            <label>Rating:</label>
+            <StarRating @bind-Value="review.Rating" />
+        </div>
+    }
+
+    @if (review.Type != ReviewType.None)
+    {
+        <div class="form-group">
+            <label>
+                <InputCheckbox @bind-Value="review.IsPublic" />
+                Public
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    }
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? ReviewId { get; set; }
+
+    private Review review = new Review { Type = ReviewType.None };
+    private List<Review> tvShows = new List<Review>();
+    private int? episodeNumber;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            if (ReviewId.HasValue)
+            {
+                review = await Context.Reviews.FindAsync(ReviewId.Value);
+                if (review == null)
+                {
+                    NavigationManager.NavigateTo("/my-reviews");
+                    return;
+                }
+                if (review.Type == ReviewType.Episode)
+                {
+                    var episodeParts = review.Title.Split(':');
+                    if (episodeParts.Length > 1)
+                    {
+                        episodeNumber = int.Parse(episodeParts[0].Replace("Episode ", "").Trim());
+                    }
+                }
+            }
+            else
+            {
+                review.UserId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+            }
+
+            tvShows = await Context.Reviews
+                .Where(r => r.Type == ReviewType.TVShow)
+                .ToListAsync();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (!IsValid())
+        {
+            return;
+        }
+
+        if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
+        {
+            review.Title = $"Episode {episodeNumber}: {review.Title}";
+        }
+
+        if (ReviewId.HasValue)
+        {
+            Context.Reviews.Update(review);
+        }
+        else
+        {
+            Context.Reviews.Add(review);
+        }
+
+        await Context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/my-reviews");
+    }
+
+    private bool IsValid()
+    {
+        if (string.IsNullOrWhiteSpace(review.Title))
+        {
+            return false;
+        }
+
+        if (review.Type == ReviewType.Movie || review.Type == ReviewType.Episode)
+        {
+            if (string.IsNullOrWhiteSpace(review.Content) || !review.Rating.HasValue)
+            {
+                return false;
+            }
+        }
+
+        if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
+        {
+            if (!review.ParentId.HasValue || !episodeNumber.HasValue)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/my-reviews");
+    }
+}

@@ -1,0 +1,21 @@
+﻿@using ReflectionCorner.Models
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">@Review.Title</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Rating: @Review.Rating/5</h6>
+        <p class="card-text">@Review.Content</p>
+        <p class="card-text"><small class="text-muted">Created at: @Review.CreatedAt.ToLocalTime()</small></p>
+        <p class="card-text"><small class="text-muted">Visibility: @(Review.IsPublic ? "Public" : "Private")</small></p>
+        <a href="/edit-review/@Review.Id" class="btn btn-primary">Edit</a>
+        <button class="btn btn-danger" @onclick="() => OnDelete.InvokeAsync(Review.Id)">Delete</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Review Review { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; }
+}

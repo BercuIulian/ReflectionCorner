@@ -1,0 +1,69 @@
+﻿@inject IJSRuntime JSRuntime
+
+<div class="modal" tabindex="-1" role="dialog" style="display:block; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Profile</h5>
+                <button type="button" class="close" @onclick="OnCancel" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (!passwordVerified)
+                {
+                    <div class="form-group">
+                        <label for="password">Please enter your password to confirm:</label>
+                        <input type="password" class="form-control" id="password" @bind="password" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @ErrorMessage
+                        </div>
+                    }
+                    <button class="btn btn-primary" @onclick="VerifyPassword">Verify</button>
+                }
+                else
+                {
+                    <p>Warning: By pressing confirm, all your data related to this account will be deleted. This action cannot be undone.</p>
+                    <p>Press confirm to continue or cancel to cancel the action.</p>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+                @if (passwordVerified)
+                {
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Confirm</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public Func<string, Task<bool>> OnPasswordVerify { get; set; }
+    [Parameter] public string ErrorMessage { get; set; }
+
+    private string password = "";
+    private bool passwordVerified = false;
+
+    private async Task VerifyPassword()
+    {
+        if (await OnPasswordVerify(password))
+        {
+            passwordVerified = true;
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Incorrect password. Please try again.");
+        }
+    }
+
+    private async Task ConfirmDelete()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+}

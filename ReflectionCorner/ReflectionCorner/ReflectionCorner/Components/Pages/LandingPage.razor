@@ -1,0 +1,17 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+
+<div class="landing-page">
+    <div class="landing-content">
+        <h1 class="landing-title">Welcome to ReflectionCorner</h1>
+        <p class="landing-subtitle">Your personal space for reflection and growth</p>
+        <div class="landing-buttons">
+            <button @onclick="@(() => NavigationManager.NavigateTo("/signup"))" class="btn btn-primary btn-lg">
+                Sign Up
+            </button>
+            <button @onclick="@(() => NavigationManager.NavigateTo("/login"))" class="btn btn-outline-primary btn-lg">
+                Login
+            </button>
+        </div>
+    </div>
+</div>

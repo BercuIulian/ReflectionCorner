@@ -1,0 +1,98 @@
+﻿@page "/signup"
+@using ReflectionCorner.Models
+@using ReflectionCorner.Data
+@using System.ComponentModel.DataAnnotations
+@inject ApplicationDbContext Context
+@inject NavigationManager NavigationManager
+
+<div class="form-container">
+    <h2 class="text-center mb-4">Sign Up</h2>
+    <EditForm Model="@signUpModel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <InputText id="username" @bind-Value="signUpModel.Username" class="form-control" />
+            <ValidationMessage For="@(() => signUpModel.Username)" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="signUpModel.Email" class="form-control" />
+            <ValidationMessage For="@(() => signUpModel.Email)" />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <InputText type="password" id="password" @bind-Value="signUpModel.Password" class="form-control" />
+            <ValidationMessage For="@(() => signUpModel.Password)" />
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <InputText type="password" id="confirmPassword" @bind-Value="signUpModel.ConfirmPassword" class="form-control" />
+            <ValidationMessage For="@(() => signUpModel.ConfirmPassword)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            @errorMessage
+        </div>
+    }
+
+    <div class="mt-3 text-center">
+        <a href="/" class="btn btn-link">Back to Home</a>
+    </div>
+</div>
+
+@code {
+    private SignUpModel signUpModel = new SignUpModel();
+    private string? errorMessage;
+
+    private class SignUpModel
+    {
+        [Required]
+        [StringLength(50, MinimumLength = 3)]
+        public string Username { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        [StringLength(100)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100, MinimumLength = 6)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var newUser = new User
+                {
+                    Username = signUpModel.Username,
+                    Email = signUpModel.Email,
+                    Password = signUpModel.Password
+                };
+
+            Context.Users.Add(newUser);
+            await Context.SaveChangesAsync();
+            NavigationManager.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred while signing up. Please try again.";
+            Console.WriteLine(ex.Message);
+        }
+    }
+}
