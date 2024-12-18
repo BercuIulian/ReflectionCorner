@@ -2,6 +2,7 @@
 @using ReflectionCorner.Models
 @using ReflectionCorner.Data
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
 
@@ -78,6 +79,22 @@
     {
         try
         {
+            // Check if username already exists
+            var existingUsername = await Context.Users.FirstOrDefaultAsync(u => u.Username == signUpModel.Username);
+            if (existingUsername != null)
+            {
+                errorMessage = "This username is already taken. Please choose a different one.";
+                return;
+            }
+
+            // Check if email already exists
+            var existingEmail = await Context.Users.FirstOrDefaultAsync(u => u.Email == signUpModel.Email);
+            if (existingEmail != null)
+            {
+                errorMessage = "This email is already registered. Please use a different email or try logging in.";
+                return;
+            }
+
             var newUser = new User
                 {
                     Username = signUpModel.Username,
