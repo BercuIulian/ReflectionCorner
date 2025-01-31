@@ -35,8 +35,8 @@
 
 @if (showDeleteConfirmation)
 {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl">
+    <div class="modal-overlay">
+        <div class="modal-content">
             <h3 class="text-lg font-bold mb-4">Confirm Deletion</h3>
             <p>Are you sure you want to delete this review?</p>
             <div class="mt-4 flex justify-end space-x-2">
@@ -53,6 +53,11 @@
     private int reviewToDeleteId;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadReviews();
+    }
+
+    private async Task LoadReviews()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -80,22 +85,40 @@
     {
         reviewToDeleteId = reviewId;
         showDeleteConfirmation = true;
+        StateHasChanged(); // Ensure the UI updates
     }
 
     private void CancelDelete()
     {
         showDeleteConfirmation = false;
+        StateHasChanged(); // Ensure the UI updates
     }
 
     private async Task DeleteReview()
     {
-        var reviewToDelete = await Context.Reviews.FindAsync(reviewToDeleteId);
-        if (reviewToDelete != null)
+        try
         {
-            Context.Reviews.Remove(reviewToDelete);
-            await Context.SaveChangesAsync();
-            reviews.RemoveAll(r => r.Id == reviewToDeleteId);
+            var reviewToDelete = await Context.Reviews.FindAsync(reviewToDeleteId);
+            if (reviewToDelete != null)
+            {
+                Context.Reviews.Remove(reviewToDelete);
+                await Context.SaveChangesAsync();
+                await LoadReviews(); // Reload the reviews after deletion
+                await JSRuntime.InvokeVoidAsync("alert", "Review deleted successfully.");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Review not found. It may have been already deleted.");
+            }
         }
-        showDeleteConfirmation = false;
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"An error occurred while deleting the review: {ex.Message}");
+        }
+        finally
+        {
+            showDeleteConfirmation = false;
+            StateHasChanged(); // Ensure the UI updates
+        }
     }
 }
