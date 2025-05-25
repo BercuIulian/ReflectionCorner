@@ -5,51 +5,187 @@
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
-<div class="form-container">
-    <h2 class="text-center mb-4">Sign Up</h2>
-    <EditForm Model="@signUpModel" OnValidSubmit="HandleValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<div class="signup-page">
+    <header class="header">
+        <MudLink Href="/" Underline="Underline.None">
+            <MudText Typo="Typo.h5" Class="brand">ReflectionCorner</MudText>
+        </MudLink>
+    </header>
 
-        <div class="form-group">
-            <label for="username">Username</label>
-            <InputText id="username" @bind-Value="signUpModel.Username" class="form-control" />
-            <ValidationMessage For="@(() => signUpModel.Username)" />
+    <main class="main-section">
+        <div class="signup-card">
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="signup-title">Create Your Account</MudText>
+
+            <EditForm Model="@signUpModel" OnValidSubmit="HandleValidSubmit" Class="signup-form">
+                <DataAnnotationsValidator />
+
+                <div class="form-group">
+                    <MudTextField @bind-Value="signUpModel.Username"
+                                  Label="Username"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  For="@(() => signUpModel.Username)"
+                                  Class="form-input" />
+                </div>
+
+                <div class="form-group">
+                    <MudTextField @bind-Value="signUpModel.Email"
+                                  Label="Email"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  InputType="InputType.Email"
+                                  For="@(() => signUpModel.Email)"
+                                  Class="form-input" />
+                </div>
+
+                <div class="form-group">
+                    <MudTextField @bind-Value="signUpModel.Password"
+                                  Label="Password"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  InputType="InputType.Password"
+                                  For="@(() => signUpModel.Password)"
+                                  Class="form-input" />
+                </div>
+
+                <div class="form-group">
+                    <MudTextField @bind-Value="signUpModel.ConfirmPassword"
+                                  Label="Confirm Password"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  InputType="InputType.Password"
+                                  For="@(() => signUpModel.ConfirmPassword)"
+                                  Class="form-input" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="error-alert">@errorMessage</MudAlert>
+                }
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Size="Size.Large"
+                           Class="submit-btn">
+                    Sign Up
+                </MudButton>
+            </EditForm>
+
+            <div class="signup-footer">
+                <MudText Align="Align.Center">
+                    Already have an account?
+                    <MudLink Href="/login" Underline="Underline.Always" Color="Color.Primary">Log in</MudLink>
+                </MudText>
+            </div>
         </div>
+    </main>
 
-        <div class="form-group">
-            <label for="email">Email</label>
-            <InputText id="email" @bind-Value="signUpModel.Email" class="form-control" />
-            <ValidationMessage For="@(() => signUpModel.Email)" />
-        </div>
+    <footer class="footer">
+        <MudLink Href="/privacy" Underline="Underline.None" Class="footer-link">Privacy Policy</MudLink>
+        <MudLink Href="/terms" Underline="Underline.None" Class="footer-link">Terms of Service</MudLink>
+    </footer>
+</div>
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <InputText type="password" id="password" @bind-Value="signUpModel.Password" class="form-control" />
-            <ValidationMessage For="@(() => signUpModel.Password)" />
-        </div>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
-        <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <InputText type="password" id="confirmPassword" @bind-Value="signUpModel.ConfirmPassword" class="form-control" />
-            <ValidationMessage For="@(() => signUpModel.ConfirmPassword)" />
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
-    </EditForm>
-
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">
-            @errorMessage
-        </div>
+    * {
+        font-family: 'Poppins', sans-serif;
     }
 
-    <div class="mt-3 text-center">
-        <a href="/" class="btn btn-link">Back to Home</a>
-    </div>
-</div>
+    .signup-page {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .header {
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .brand {
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .main-section {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .signup-card {
+        background: #ffffff;
+        padding: 2rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .signup-title {
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .signup-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-input {
+        margin-bottom: 0.rem;
+    }
+
+    .error-alert {
+        margin-bottom: 1rem;
+    }
+
+    .submit-btn {
+        margin-top: 0rem;
+        height: 50px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .signup-footer {
+        margin-top: 1rem;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .footer {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        background-color: transparent;
+        font-size: 0.8rem;
+    }
+
+    .footer-link {
+        color: #555;
+    }
+</style>
 
 @code {
     private SignUpModel signUpModel = new SignUpModel();
@@ -58,20 +194,20 @@
     private class SignUpModel
     {
         [Required]
-        [StringLength(50, MinimumLength = 3)]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters")]
         public string Username { get; set; } = string.Empty;
 
         [Required]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
         [StringLength(100)]
         public string Email { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(100, MinimumLength = 6)]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
         public string Password { get; set; } = string.Empty;
 
         [Required]
-        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
@@ -79,7 +215,6 @@
     {
         try
         {
-            // Check if username already exists
             var existingUsername = await Context.Users.FirstOrDefaultAsync(u => u.Username == signUpModel.Username);
             if (existingUsername != null)
             {
@@ -87,7 +222,6 @@
                 return;
             }
 
-            // Check if email already exists
             var existingEmail = await Context.Users.FirstOrDefaultAsync(u => u.Email == signUpModel.Email);
             if (existingEmail != null)
             {
@@ -96,14 +230,16 @@
             }
 
             var newUser = new User
-                {
-                    Username = signUpModel.Username,
-                    Email = signUpModel.Email,
-                    Password = signUpModel.Password
-                };
+            {
+                Username = signUpModel.Username,
+                Email = signUpModel.Email,
+                Password = signUpModel.Password
+            };
 
             Context.Users.Add(newUser);
             await Context.SaveChangesAsync();
+
+            Snackbar.Add("Account created successfully!", Severity.Success);
             NavigationManager.NavigateTo("/login");
         }
         catch (Exception ex)

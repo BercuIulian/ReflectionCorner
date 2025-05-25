@@ -7,32 +7,34 @@
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
 
-<h2>Your Profile</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Your Profile</h2>
 
-<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">@(currentUser?.FirstName ?? "") @(currentUser?.LastName ?? "")</h5>
-        <p class="card-text">Username: @username</p>
-        <p class="card-text">Email: @email</p>
-        <p class="card-text">Contact: @(currentUser?.Contact ?? "Not provided")</p>
-        <p class="card-text">Profile Status: @(currentUser?.IsPublic ?? false ? "Public" : "Private")</p>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">@($"{currentUser?.FirstName ?? ""} {currentUser?.LastName ?? ""}")</h5>
+            <p class="card-text"><strong>Username:</strong> @username</p>
+            <p class="card-text"><strong>Email:</strong> @email</p>
+            <p class="card-text"><strong>Contact:</strong> @(currentUser?.Contact ?? "Not provided")</p>
+            <p class="card-text"><strong>Profile Status:</strong> @(currentUser?.IsPublic == true ? "Public" : "Private")</p>
+
+            <div class="d-flex justify-content-start mt-3 gap-2">
+                <button class="btn btn-primary" @onclick="NavigateToEditProfile">Edit Profile</button>
+                <button class="btn btn-danger" @onclick="ShowDeleteConfirmation">Delete Profile</button>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="mt-3">
-    <button class="btn btn-primary" @onclick="NavigateToEditProfile">Edit Profile</button>
-    <button class="btn btn-danger ml-2" @onclick="ShowDeleteConfirmation">Delete Profile</button>
+    @if (showDeleteConfirmation)
+    {
+        <div class="mt-4">
+            <DeleteConfirmationDialog OnConfirm="DeleteProfile"
+                                      OnCancel="CancelDelete"
+                                      OnPasswordVerify="VerifyPassword"
+                                      ErrorMessage="@errorMessage" />
+        </div>
+    }
 </div>
-
-@if (showDeleteConfirmation)
-{
-    <DeleteConfirmationDialog 
-        OnConfirm="DeleteProfile"
-        OnCancel="CancelDelete"
-        OnPasswordVerify="VerifyPassword"
-        ErrorMessage="@errorMessage"
-    />
-}
 
 @code {
     private string username = "";
@@ -46,12 +48,12 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user.Identity.IsAuthenticated)
+        if (user.Identity?.IsAuthenticated == true)
         {
             username = user.Identity.Name;
-            var userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             currentUser = await Context.Users.FindAsync(userId);
-            email = currentUser.Email;
+            email = currentUser?.Email ?? "";
         }
         else
         {
@@ -59,10 +61,7 @@
         }
     }
 
-    private void NavigateToEditProfile()
-    {
-        NavigationManager.NavigateTo("/edit-profile");
-    }
+    private void NavigateToEditProfile() => NavigationManager.NavigateTo("/edit-profile");
 
     private void ShowDeleteConfirmation()
     {
@@ -76,13 +75,13 @@
         errorMessage = "";
     }
 
-    private async Task<bool> VerifyPassword(string password)
-    {
-        return currentUser.Password == password;
-    }
+    private async Task<bool> VerifyPassword(string password) =>
+        currentUser?.Password == password;
 
     private async Task DeleteProfile()
     {
+        if (currentUser is null) return;
+
         Context.Users.Remove(currentUser);
         await Context.SaveChangesAsync();
 

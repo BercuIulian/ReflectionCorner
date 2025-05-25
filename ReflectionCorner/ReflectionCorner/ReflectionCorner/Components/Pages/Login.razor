@@ -7,39 +7,177 @@
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISnackbar Snackbar
 
-<div class="form-container">
-    <h2 class="text-center mb-4">Login</h2>
-    <EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<div class="page-container">
+    <header class="header">
+        <MudLink Href="/" Underline="Underline.None">
+            <MudText Typo="Typo.h5" Class="brand">ReflectionCorner</MudText>
+        </MudLink>
+    </header>
 
-        <div class="form-group">
-            <label for="username">Username</label>
-            <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
-            <ValidationMessage For="@(() => loginModel.Username)" />
+    <main class="main-content">
+        <div class="form-box">
+            <MudText Typo="Typo.h3" Align="Align.Center" Class="form-title">Log In</MudText>
+
+            <EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmit" Class="auth-form">
+                <DataAnnotationsValidator />
+
+                <div class="form-field">
+                    <MudTextField @bind-Value="loginModel.Username"
+                                  Label="Username"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  For="@(() => loginModel.Username)"
+                                  Class="input-field" />
+                </div>
+
+                <div class="form-field">
+                    <MudTextField @bind-Value="loginModel.Password"
+                                  Label="Password"
+                                  Variant="Variant.Outlined"
+                                  FullWidth="true"
+                                  InputType="InputType.Password"
+                                  For="@(() => loginModel.Password)"
+                                  Class="input-field" />
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="error-alert">@errorMessage</MudAlert>
+                }
+
+                <div class="form-actions">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Size="Size.Large"
+                               Class="submit-button">
+                        Log In
+                    </MudButton>
+                </div>
+            </EditForm>
+
+            <div class="form-footer">
+                <MudText Align="Align.Center" Typo="Typo.body2">
+                    Don't have an account?
+                    <MudLink Href="/signup" Underline="Underline.Always" Color="Color.Primary">Sign up</MudLink>
+                </MudText>
+            </div>
         </div>
+    </main>
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <InputText type="password" id="password" @bind-Value="loginModel.Password" class="form-control" />
-            <ValidationMessage For="@(() => loginModel.Password)" />
-        </div>
+    <footer class="footer">
+        <MudLink Href="/privacy" Underline="Underline.None" Class="footer-link">Privacy Policy</MudLink>
+        <MudLink Href="/terms" Underline="Underline.None" Class="footer-link">Terms of Service</MudLink>
+    </footer>
+</div>
 
-        <button type="submit" class="btn btn-primary btn-block">Log In</button>
-    </EditForm>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">
-            @errorMessage
-        </div>
+    * {
+        font-family: 'Poppins', sans-serif;
     }
 
-    <div class="mt-3 text-center">
-        <a href="/" class="btn btn-link">Back to Home</a>
-    </div>
-</div>
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #ffffff 0%, #f0f4ff 100%);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .header {
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .brand {
+        font-weight: 700;
+        font-size: 1.75rem;
+        color: #333;
+        text-decoration: none;
+        align-items: center;
+    }
+
+    .main-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .form-box {
+        background: white;
+        padding: 3rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .form-title {
+        font-weight: 600;
+        margin-bottom: 2rem;
+        color: #222;
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-field {
+        margin-bottom: 1.5rem;
+    }
+
+    .input-field {
+        font-size: 1rem;
+    }
+
+    .form-actions {
+        margin-top: 1.5rem;
+    }
+
+    .submit-button {
+        height: 48px;
+        font-weight: 600;
+        border-radius: 8px;
+        text-transform: none;
+    }
+
+    .error-alert {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-footer {
+        margin-top: 2rem;
+        text-align: center;
+    }
+
+    .footer {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+        font-size: 0.875rem;
+        color: #777;
+    }
+
+    .footer-link {
+        color: #777;
+        transition: color 0.3s;
+    }
+
+        .footer-link:hover {
+            color: #333;
+        }
+</style>
 
 @code {
     private LoginModel loginModel = new LoginModel();
@@ -61,6 +199,7 @@
         if (user != null)
         {
             ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(user);
+            Snackbar.Add("Logged in successfully!", Severity.Success);
             NavigationManager.NavigateTo("/home");
         }
         else

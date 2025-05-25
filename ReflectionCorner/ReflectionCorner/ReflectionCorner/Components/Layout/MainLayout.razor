@@ -3,19 +3,27 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
 <div class="page">
     <AuthorizeView>
         <Authorized>
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
                 <div class="container">
-                    <div class="navbar-nav d-flex flex-row">
-                        <a class="btn btn-outline-light mx-1" href="/home">Home</a>
-                        <a class="btn btn-outline-light mx-1" href="/profile">Profile</a>
-                        <a class="btn btn-outline-light mx-1" href="/add-review">Add Review</a>
-                        <a class="btn btn-outline-light mx-1" href="/my-reviews">My Reviews</a>
-                        <button class="btn btn-outline-light mx-1" @onclick="Logout">Logout</button>
-                    </div>
-                    <a class="navbar-brand" href="/home">ReflectionCorner</a>
+                    <div class="navbar-nav d-flex flex-row w-100">
+                        <div class="nav-focuse_left">
+                            <a class="navbar-brand" href="/home">ReflectionCorner</a>
+                        </div>
+                        <div class="nav-focuse_right">
+                            <a class="btn btn-outline-light mx-1" href="/home">Home</a>
+                            <a class="btn btn-outline-light mx-1" href="/profile">Profile</a>
+                            <a class="btn btn-outline-light mx-1" href="/add-review">Add Review</a>
+                            <a class="btn btn-outline-light mx-1" href="/my-reviews">My Reviews</a>
+                            <button class="btn btn-outline-light mx-1" @onclick="Logout">Logout</button>
+                        </div>                        
+                    </div>                    
                 </div>
             </nav>
         </Authorized>

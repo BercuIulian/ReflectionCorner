@@ -1,17 +1,145 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
 
-<div class="landing-page">
-    <div class="landing-content">
-        <h1 class="landing-title">Welcome to ReflectionCorner</h1>
-        <p class="landing-subtitle">Your personal space for reflection and growth</p>
-        <div class="landing-buttons">
-            <button @onclick="@(() => NavigationManager.NavigateTo("/signup"))" class="btn btn-primary btn-lg">
-                Sign Up
-            </button>
-            <button @onclick="@(() => NavigationManager.NavigateTo("/login"))" class="btn btn-outline-primary btn-lg">
-                Login
-            </button>
+<div class="page-container">
+    <header class="header">
+        <div class="logo">
+            <MudText Typo="Typo.h5" Class="brand">ReflectionCorner</MudText>
         </div>
-    </div>
+        <nav class="nav-links">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="nav-button" OnClick="@(() => NavigationManager.NavigateTo("/login"))">
+                Login
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="nav-button" OnClick="@(() => NavigationManager.NavigateTo("/signup"))">
+                Sign Up
+            </MudButton>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="hero-content">
+            <MudText Typo="Typo.h1" Align="Align.Center" Class="hero-title">
+                Welcome to ReflectionCorner
+            </MudText>
+            <MudText Typo="Typo.h6" Align="Align.Center" Class="hero-subtitle">
+                Discover a place where your thoughts matter.
+            </MudText>
+
+            <div class="button-group">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Class="primary-action" OnClick="@(() => NavigationManager.NavigateTo("/signup"))">
+                    Get Started
+                </MudButton>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <MudLink Href="/privacy" Underline="Underline.None" Class="footer-link">Privacy Policy</MudLink>
+        <MudLink Href="/terms" Underline="Underline.None" Class="footer-link">Terms of Service</MudLink>
+    </footer>
 </div>
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+    * {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f9ff 0%, #ffffff 100%);
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 3rem;
+        background-color: transparent;
+        box-shadow: none;
+    }
+
+    .brand {
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: #1e3a8a;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .nav-button {
+        border-radius: 12px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+    }
+
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .hero-content {
+        max-width: 700px;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: #555;
+        margin-bottom: 3rem;
+    }
+
+    .button-group {
+        display: flex;
+        justify-content: center;
+    }
+
+    .primary-action {
+        border-radius: 12px;
+        padding: 0.8rem 2.5rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    .footer {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem 1rem;
+        background: #f5f5f5;
+    }
+
+    .footer-link {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    @@media (max-width: 600px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .nav-links {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+</style>

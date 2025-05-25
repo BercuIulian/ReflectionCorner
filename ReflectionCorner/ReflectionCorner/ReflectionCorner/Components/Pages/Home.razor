@@ -3,16 +3,58 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
-<h1>Welcome to ReflectionCorner</h1>
+<div class="home-page">
+    <div class="welcome-card">
+        <h1 class="welcome-title">Welcome to ReflectionCorner</h1>
 
-@if (!string.IsNullOrEmpty(username))
-{
-    <p>Hi @username, welcome to ReflectionCorner!</p>
-}
-else
-{
-    <p>Welcome to ReflectionCorner!</p>
-}
+        @if (!string.IsNullOrEmpty(username))
+        {
+            <p class="welcome-message">Hi <strong>@username</strong>, welcome back to ReflectionCorner!</p>
+        }
+        else
+        {
+            <p class="welcome-message">Welcome to ReflectionCorner!</p>
+        }
+    </div>
+</div>
+
+<style>
+    .home-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 75vh;
+        background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
+        padding: 1rem;
+    }
+
+    .welcome-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .welcome-message {
+        font-size: 1.2rem;
+        color: #555;
+    }
+
+    strong {
+        color: #3f51b5;
+    }
+
+</style>
 
 @code {
     private string username = "";

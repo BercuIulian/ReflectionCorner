@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ReflectionCorner.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using ReflectionCorner.Areas.Identity;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add AuthenticationStateProvider
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 

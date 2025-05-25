@@ -6,37 +6,43 @@
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
 
-<h2>Edit Profile</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Edit Profile</h2>
 
-<EditForm Model="@user" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <EditForm Model="@user" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="mb-3 text-danger" />
 
-    <div class="form-group">
-        <label for="firstName">First Name</label>
-        <InputText id="firstName" @bind-Value="user.FirstName" class="form-control" />
+                <div class="mb-3">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <InputText id="firstName" @bind-Value="user.FirstName" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <InputText id="lastName" @bind-Value="user.LastName" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="contact" class="form-label">Contact</label>
+                    <InputText id="contact" @bind-Value="user.Contact" class="form-control" />
+                </div>
+
+                <div class="form-check mb-4">
+                    <InputCheckbox id="isPublic" @bind-Value="user.IsPublic" class="form-check-input" />
+                    <label for="isPublic" class="form-check-label">Make profile public</label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label for="lastName">Last Name</label>
-        <InputText id="lastName" @bind-Value="user.LastName" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label for="contact">Contact</label>
-        <InputText id="contact" @bind-Value="user.Contact" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label>
-            <InputCheckbox @bind-Value="user.IsPublic" />
-            Make profile public
-        </label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-    <button type="button" class="btn btn-secondary ml-2" @onclick="CancelEdit">Cancel</button>
-</EditForm>
+</div>
 
 @code {
     private User user;
@@ -44,7 +50,7 @@
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var userId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var userId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
         user = await Context.Users.FindAsync(userId);
     }
 
@@ -55,8 +61,5 @@
         NavigationManager.NavigateTo("/profile");
     }
 
-    private void CancelEdit()
-    {
-        NavigationManager.NavigateTo("/profile");
-    }
+    private void CancelEdit() => NavigationManager.NavigateTo("/profile");
 }

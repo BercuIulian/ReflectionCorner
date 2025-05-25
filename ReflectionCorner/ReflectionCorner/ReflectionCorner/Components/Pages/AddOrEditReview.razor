@@ -4,7 +4,7 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<h3>@(ReviewId.HasValue ? "Edit" : "Add") Review</h3>
+<h2 class="mb-4">@((ReviewId.HasValue ? "Edit" : "Add") + " Review")</h2>
 
 <EditForm Model="@review" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -12,8 +12,8 @@
 
     @if (!ReviewId.HasValue)
     {
-        <div class="form-group">
-            <label for="type">Type:</label>
+        <div class="form-group mb-3">
+            <label for="type" class="form-label">Type</label>
             <InputSelect id="type" @bind-Value="review.Type" class="form-control">
                 <option value="@ReviewType.None">Select a type</option>
                 <option value="@ReviewType.Movie">Movie</option>
@@ -25,32 +25,32 @@
 
     @if (review.Type == ReviewType.Movie || (ReviewId.HasValue && review.Type != ReviewType.TVShow))
     {
-        <div class="form-group">
-            <label for="title">Title:</label>
+        <div class="form-group mb-3">
+            <label for="title" class="form-label">Title</label>
             <InputText id="title" @bind-Value="review.Title" class="form-control" />
         </div>
 
-        <div class="form-group">
-            <label for="content">Review:</label>
+        <div class="form-group mb-3">
+            <label for="content" class="form-label">Review</label>
             <InputTextArea id="content" @bind-Value="review.Content" class="form-control" rows="5" />
         </div>
 
-        <div class="form-group">
-            <label>Rating:</label>
+        <div class="form-group mb-3">
+            <label class="form-label d-block">Rating</label>
             <StarRating @bind-Value="review.Rating" />
         </div>
     }
     else if (review.Type == ReviewType.TVShow)
     {
-        <div class="form-group">
-            <label for="tvShowName">TV Show Name:</label>
+        <div class="form-group mb-3">
+            <label for="tvShowName" class="form-label">TV Show Name</label>
             <InputText id="tvShowName" @bind-Value="review.Title" class="form-control" />
         </div>
     }
     else if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
     {
-        <div class="form-group">
-            <label for="tvShowSelect">TV Show:</label>
+        <div class="form-group mb-3">
+            <label for="tvShowSelect" class="form-label">TV Show</label>
             <InputSelect id="tvShowSelect" @bind-Value="review.ParentId" class="form-control">
                 <option value="">Select a TV Show</option>
                 @foreach (var tvShow in tvShows)
@@ -60,38 +60,38 @@
             </InputSelect>
         </div>
 
-        <div class="form-group">
-            <label for="episodeName">Episode Name:</label>
+        <div class="form-group mb-3">
+            <label for="episodeName" class="form-label">Episode Name</label>
             <InputText id="episodeName" @bind-Value="review.Title" class="form-control" />
         </div>
 
-        <div class="form-group">
-            <label for="episodeNumber">Episode Number:</label>
+        <div class="form-group mb-3">
+            <label for="episodeNumber" class="form-label">Episode Number</label>
             <InputNumber id="episodeNumber" @bind-Value="episodeNumber" class="form-control" />
         </div>
 
-        <div class="form-group">
-            <label for="episodeReview">Review:</label>
+        <div class="form-group mb-3">
+            <label for="episodeReview" class="form-label">Review</label>
             <InputTextArea id="episodeReview" @bind-Value="review.Content" class="form-control" rows="5" />
         </div>
 
-        <div class="form-group">
-            <label>Rating:</label>
+        <div class="form-group mb-3">
+            <label class="form-label d-block">Rating</label>
             <StarRating @bind-Value="review.Rating" />
         </div>
     }
 
     @if (review.Type != ReviewType.None)
     {
-        <div class="form-group">
-            <label>
-                <InputCheckbox @bind-Value="review.IsPublic" />
-                Public
-            </label>
+        <div class="form-group form-check mb-4">
+            <InputCheckbox id="isPublic" class="form-check-input" @bind-Value="review.IsPublic" />
+            <label for="isPublic" class="form-check-label">Make review public</label>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
     }
 </EditForm>
 
@@ -99,8 +99,8 @@
     [Parameter]
     public int? ReviewId { get; set; }
 
-    private Review review = new Review { Type = ReviewType.None };
-    private List<Review> tvShows = new List<Review>();
+    private Review review = new() { Type = ReviewType.None };
+    private List<Review> tvShows = new();
     private int? episodeNumber;
 
     protected override async Task OnInitializedAsync()
@@ -108,46 +108,43 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user.Identity.IsAuthenticated)
+        if (!user.Identity?.IsAuthenticated ?? true)
         {
-            if (ReviewId.HasValue)
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        if (ReviewId.HasValue)
+        {
+            review = await Context.Reviews.FindAsync(ReviewId.Value);
+            if (review == null)
             {
-                review = await Context.Reviews.FindAsync(ReviewId.Value);
-                if (review == null)
-                {
-                    NavigationManager.NavigateTo("/my-reviews");
-                    return;
-                }
-                if (review.Type == ReviewType.Episode)
-                {
-                    var episodeParts = review.Title.Split(':');
-                    if (episodeParts.Length > 1)
-                    {
-                        episodeNumber = int.Parse(episodeParts[0].Replace("Episode ", "").Trim());
-                    }
-                }
-            }
-            else
-            {
-                review.UserId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+                NavigationManager.NavigateTo("/my-reviews");
+                return;
             }
 
-            tvShows = await Context.Reviews
-                .Where(r => r.Type == ReviewType.TVShow)
-                .ToListAsync();
+            if (review.Type == ReviewType.Episode)
+            {
+                var episodeParts = review.Title.Split(':');
+                if (episodeParts.Length > 1)
+                {
+                    episodeNumber = int.TryParse(episodeParts[0].Replace("Episode", "").Trim(), out var num) ? num : null;
+                }
+            }
         }
         else
         {
-            NavigationManager.NavigateTo("/login");
+            review.UserId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
         }
+
+        tvShows = await Context.Reviews
+            .Where(r => r.Type == ReviewType.TVShow)
+            .ToListAsync();
     }
 
     private async Task HandleValidSubmit()
     {
-        if (!IsValid())
-        {
-            return;
-        }
+        if (!IsValid()) return;
 
         if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
         {
@@ -169,26 +166,13 @@
 
     private bool IsValid()
     {
-        if (string.IsNullOrWhiteSpace(review.Title))
-        {
-            return false;
-        }
+        if (string.IsNullOrWhiteSpace(review.Title)) return false;
 
-        if (review.Type == ReviewType.Movie || review.Type == ReviewType.Episode)
-        {
-            if (string.IsNullOrWhiteSpace(review.Content) || !review.Rating.HasValue)
-            {
-                return false;
-            }
-        }
+        if ((review.Type == ReviewType.Movie || review.Type == ReviewType.Episode) &&
+            (string.IsNullOrWhiteSpace(review.Content) || !review.Rating.HasValue)) return false;
 
-        if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
-        {
-            if (!review.ParentId.HasValue || !episodeNumber.HasValue)
-            {
-                return false;
-            }
-        }
+        if (review.Type == ReviewType.Episode && !ReviewId.HasValue &&
+            (!review.ParentId.HasValue || !episodeNumber.HasValue)) return false;
 
         return true;
     }
