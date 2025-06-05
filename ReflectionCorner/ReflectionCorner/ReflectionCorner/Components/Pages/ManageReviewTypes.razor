@@ -1,0 +1,146 @@
+﻿@page "/manage-review-types"
+@using ReflectionCorner.Models
+@using ReflectionCorner.Data
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@inject ApplicationDbContext Context
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<h3 class="text-2xl font-bold mb-4">Manage Review Types</h3>
+
+<div class="mb-4">
+    <button class="btn btn-primary" @onclick="ShowAddForm">Add New Review Type</button>
+</div>
+
+@if (showAddForm)
+{
+    <div class="card bg-base-100 shadow-xl mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Add New Review Type</h4>
+            <EditForm Model="@newReviewType" OnValidSubmit="AddReviewType">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="newReviewType.Name" class="form-control" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="description" class="form-label">Description:</label>
+                    <InputTextArea id="description" @bind-Value="newReviewType.Description" class="form-control" rows="3" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelAdd">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach (var reviewType in customReviewTypes)
+    {
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">@reviewType.Name</h2>
+                <p>@reviewType.Description</p>
+                <p>Created: @reviewType.CreatedAt.ToShortDateString()</p>
+                <div class="card-actions justify-end">
+                    <button class="btn btn-error btn-sm" @onclick="() => DeleteReviewType(reviewType.Id)">Delete</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CustomReviewType> customReviewTypes = new List<CustomReviewType>();
+    private CustomReviewType newReviewType = new CustomReviewType();
+    private bool showAddForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomReviewTypes();
+    }
+
+    private async Task LoadCustomReviewTypes()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            int userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+            customReviewTypes = await Context.CustomReviewTypes
+                .Where(rt => rt.UserId == userId)
+                .OrderBy(rt => rt.Name)
+                .ToListAsync();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+    private void ShowAddForm()
+    {
+        newReviewType = new CustomReviewType();
+        showAddForm = true;
+    }
+
+    private void CancelAdd()
+    {
+        showAddForm = false;
+        newReviewType = new CustomReviewType();
+    }
+
+    private async Task AddReviewType()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            int userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            newReviewType.UserId = userId;
+            newReviewType.IsDefault = false;
+
+            Context.CustomReviewTypes.Add(newReviewType);
+            await Context.SaveChangesAsync();
+
+            await LoadCustomReviewTypes();
+            await JSRuntime.InvokeVoidAsync("alert", "Review type added successfully!");
+
+            showAddForm = false;
+            newReviewType = new CustomReviewType();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error adding review type: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteReviewType(int reviewTypeId)
+    {
+        try
+        {
+            var reviewType = await Context.CustomReviewTypes.FindAsync(reviewTypeId);
+            if (reviewType != null)
+            {
+                Context.CustomReviewTypes.Remove(reviewType);
+                await Context.SaveChangesAsync();
+                await LoadCustomReviewTypes();
+                await JSRuntime.InvokeVoidAsync("alert", "Review type deleted successfully!");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error deleting review type: {ex.Message}");
+        }
+    }
+}

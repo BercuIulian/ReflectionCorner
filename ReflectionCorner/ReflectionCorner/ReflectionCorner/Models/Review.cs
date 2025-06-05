@@ -27,6 +27,9 @@ namespace ReflectionCorner.Models
         [Required]
         public ReviewType Type { get; set; }
 
+        // New property for custom review types
+        public int? CustomReviewTypeId { get; set; }
+
         public int? ParentId { get; set; }
 
         [ForeignKey("UserId")]
@@ -34,6 +37,9 @@ namespace ReflectionCorner.Models
 
         [ForeignKey("ParentId")]
         public Review ParentReview { get; set; }
+
+        [ForeignKey("CustomReviewTypeId")]
+        public CustomReviewType CustomReviewType { get; set; }
     }
 
     public enum ReviewType
@@ -41,6 +47,7 @@ namespace ReflectionCorner.Models
         None,
         Movie,
         TVShow,
-        Episode
+        Episode,
+        Custom // New enum value for custom types
     }
 }

@@ -16,7 +16,7 @@
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
                 <h2 class="card-title">@review.Title</h2>
-                <p>Type: @review.Type</p>
+                <p>Type: @GetReviewTypeDisplay(review)</p>
                 @if (review.Type != ReviewType.TVShow)
                 {
                     <p>Rating: @review.Rating/5</p>
@@ -66,6 +66,7 @@
         {
             int userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
             reviews = await Context.Reviews
+                .Include(r => r.CustomReviewType)
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -74,6 +75,15 @@
         {
             NavigationManager.NavigateTo("/login");
         }
+    }
+
+    private string GetReviewTypeDisplay(Review review)
+    {
+        if (review.Type == ReviewType.Custom && review.CustomReviewType != null)
+        {
+            return review.CustomReviewType.Name;
+        }
+        return review.Type.ToString();
     }
 
     private void EditReview(int reviewId)
@@ -85,13 +95,13 @@
     {
         reviewToDeleteId = reviewId;
         showDeleteConfirmation = true;
-        StateHasChanged(); // Ensure the UI updates
+        StateHasChanged();
     }
 
     private void CancelDelete()
     {
         showDeleteConfirmation = false;
-        StateHasChanged(); // Ensure the UI updates
+        StateHasChanged();
     }
 
     private async Task DeleteReview()
@@ -103,7 +113,7 @@
             {
                 Context.Reviews.Remove(reviewToDelete);
                 await Context.SaveChangesAsync();
-                await LoadReviews(); // Reload the reviews after deletion
+                await LoadReviews();
                 await JSRuntime.InvokeVoidAsync("alert", "Review deleted successfully.");
             }
             else
@@ -118,7 +128,7 @@
         finally
         {
             showDeleteConfirmation = false;
-            StateHasChanged(); // Ensure the UI updates
+            StateHasChanged();
         }
     }
 }

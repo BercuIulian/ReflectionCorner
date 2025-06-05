@@ -15,6 +15,7 @@ namespace ReflectionCorner.Data
         public DbSet<Movie> Movies { get; set; }
         public DbSet<TVShow> TVShows { get; set; }
         public DbSet<Episode> Episodes { get; set; }
+        public DbSet<CustomReviewType> CustomReviewTypes { get; set; } // Renamed DbSet
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,28 @@ namespace ReflectionCorner.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
+            // Configure CustomReviewType entity
+            modelBuilder.Entity<CustomReviewType>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+                entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(200);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Review entity relationships
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.CustomReviewType)
+                .WithMany()
+                .HasForeignKey(r => r.CustomReviewTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Movie>()
                 .HasOne(m => m.User)

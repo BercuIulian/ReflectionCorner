@@ -1,5 +1,9 @@
 ﻿@page "/add-review"
 @page "/edit-review/{ReviewId:int}"
+@using ReflectionCorner.Models
+@using ReflectionCorner.Data
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -14,16 +18,31 @@
     {
         <div class="form-group mb-3">
             <label for="type" class="form-label">Type</label>
-            <InputSelect id="type" @bind-Value="review.Type" class="form-control">
+            <InputSelect id="type" @bind-Value="review.Type" class="form-control" @onchange="OnTypeChanged">
                 <option value="@ReviewType.None">Select a type</option>
                 <option value="@ReviewType.Movie">Movie</option>
                 <option value="@ReviewType.TVShow">TV Show</option>
                 <option value="@ReviewType.Episode">Episode</option>
+                <option value="@ReviewType.Custom">Custom Type</option>
             </InputSelect>
         </div>
+
+        @if (review.Type == ReviewType.Custom)
+        {
+            <div class="form-group mb-3">
+                <label for="customType" class="form-label">Custom Review Type</label>
+                <InputSelect id="customType" @bind-Value="review.CustomReviewTypeId" class="form-control">
+                    <option value="">Select a custom type</option>
+                    @foreach (var customType in customReviewTypes)
+                    {
+                        <option value="@customType.Id">@customType.Name</option>
+                    }
+                </InputSelect>
+            </div>
+        }
     }
 
-    @if (review.Type == ReviewType.Movie || (ReviewId.HasValue && review.Type != ReviewType.TVShow))
+    @if (review.Type == ReviewType.Movie || review.Type == ReviewType.Custom || (ReviewId.HasValue && review.Type != ReviewType.TVShow))
     {
         <div class="form-group mb-3">
             <label for="title" class="form-label">Title</label>
@@ -101,6 +120,7 @@
 
     private Review review = new() { Type = ReviewType.None };
     private List<Review> tvShows = new();
+    private List<CustomReviewType> customReviewTypes = new();
     private int? episodeNumber;
 
     protected override async Task OnInitializedAsync()
@@ -114,9 +134,20 @@
             return;
         }
 
+        int userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+        // Load custom review types for this user
+        customReviewTypes = await Context.CustomReviewTypes
+            .Where(rt => rt.UserId == userId)
+            .OrderBy(rt => rt.Name)
+            .ToListAsync();
+
         if (ReviewId.HasValue)
         {
-            review = await Context.Reviews.FindAsync(ReviewId.Value);
+            review = await Context.Reviews
+                .Include(r => r.CustomReviewType)
+                .FirstOrDefaultAsync(r => r.Id == ReviewId.Value);
+
             if (review == null)
             {
                 NavigationManager.NavigateTo("/my-reviews");
@@ -134,12 +165,24 @@
         }
         else
         {
-            review.UserId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+            review.UserId = userId;
         }
 
         tvShows = await Context.Reviews
-            .Where(r => r.Type == ReviewType.TVShow)
+            .Where(r => r.Type == ReviewType.TVShow && r.UserId == userId)
             .ToListAsync();
+    }
+
+    private async Task OnTypeChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<ReviewType>(e.Value?.ToString(), out var selectedType))
+        {
+            review.Type = selectedType;
+            if (selectedType != ReviewType.Custom)
+            {
+                review.CustomReviewTypeId = null;
+            }
+        }
     }
 
     private async Task HandleValidSubmit()
@@ -168,7 +211,9 @@
     {
         if (string.IsNullOrWhiteSpace(review.Title)) return false;
 
-        if ((review.Type == ReviewType.Movie || review.Type == ReviewType.Episode) &&
+        if (review.Type == ReviewType.Custom && !review.CustomReviewTypeId.HasValue) return false;
+
+        if ((review.Type == ReviewType.Movie || review.Type == ReviewType.Episode || review.Type == ReviewType.Custom) &&
             (string.IsNullOrWhiteSpace(review.Content) || !review.Rating.HasValue)) return false;
 
         if (review.Type == ReviewType.Episode && !ReviewId.HasValue &&
