@@ -15,7 +15,7 @@ namespace ReflectionCorner.Data
         public DbSet<Movie> Movies { get; set; }
         public DbSet<TVShow> TVShows { get; set; }
         public DbSet<Episode> Episodes { get; set; }
-        public DbSet<CustomReviewType> CustomReviewTypes { get; set; } // Renamed DbSet
+        public DbSet<CustomReviewType> CustomReviewTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +28,16 @@ namespace ReflectionCorner.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
+            // Add indexes for search performance
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => r.Title);
+
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => r.Type);
+
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => r.IsPublic);
 
             // Configure CustomReviewType entity
             modelBuilder.Entity<CustomReviewType>(entity =>

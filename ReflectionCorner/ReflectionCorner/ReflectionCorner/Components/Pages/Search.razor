@@ -1,0 +1,201 @@
+﻿@page "/search"
+@using ReflectionCorner.Models
+@using ReflectionCorner.Services
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@inject SearchService SearchService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<h3 class="text-2xl font-bold mb-4">Search Reviews</h3>
+
+<div class="card bg-base-100 shadow-xl mb-6">
+    <div class="card-body">
+        <h4 class="card-title">Search Criteria</h4>
+        <EditForm Model="@searchCriteria" OnValidSubmit="HandleSearch">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <InputText id="username" @bind-Value="searchCriteria.Username"
+                               class="form-control" placeholder="Enter username..." />
+                </div>
+
+                <div class="form-group">
+                    <label for="reviewType" class="form-label">Review Type</label>
+                    <InputSelect id="reviewType" @bind-Value="searchCriteria.ReviewType"
+                                 class="form-control" @onchange="OnReviewTypeChanged">
+                        <option value="">All Types</option>
+                        <option value="@ReviewType.Movie">Movie</option>
+                        <option value="@ReviewType.TVShow">TV Show</option>
+                        <option value="@ReviewType.Episode">Episode</option>
+                        <option value="@ReviewType.Custom">Custom Type</option>
+                    </InputSelect>
+                </div>
+
+                @if (searchCriteria.ReviewType == ReviewType.Custom)
+                {
+                    <div class="form-group">
+                        <label for="customType" class="form-label">Custom Type</label>
+                        <InputSelect id="customType" @bind-Value="searchCriteria.CustomReviewTypeId"
+                                     class="form-control">
+                            <option value="">Select Custom Type</option>
+                            @foreach (var customType in availableCustomTypes)
+                            {
+                                <option value="@customType.Id">@customType.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                }
+
+                <div class="form-group">
+                    <label for="title" class="form-label">Review Title</label>
+                    <InputText id="title" @bind-Value="searchCriteria.Title"
+                               class="form-control" placeholder="Enter title..." />
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" disabled="@isSearching">
+                    @if (isSearching)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Searching...</span>
+                    }
+                    else
+                    {
+                        <span>Search</span>
+                    }
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@if (hasSearched)
+{
+    <div class="mb-4">
+        <h4>Search Results (@searchResults.Count found)</h4>
+    </div>
+
+    @if (searchResults.Any())
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach (var result in searchResults)
+            {
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title">@result.Title</h2>
+                        <p><strong>By:</strong> @result.Username</p>
+                        <p><strong>Type:</strong> @result.TypeDisplayName</p>
+                        @if (!string.IsNullOrEmpty(result.TVShowTitle))
+                        {
+                            <p><strong>TV Show:</strong> @result.TVShowTitle</p>
+                        }
+                        @if (result.Type != ReviewType.TVShow && result.Rating.HasValue)
+                        {
+                            <p><strong>Rating:</strong> @result.Rating/5</p>
+                        }
+                        @if (!string.IsNullOrEmpty(result.Content) && result.Type != ReviewType.TVShow)
+                        {
+                            <p class="truncate">@result.Content</p>
+                        }
+                        <p><strong>Created:</strong> @result.CreatedAt.ToShortDateString()</p>
+                        <p><strong>Visibility:</strong> @(result.IsPublic ? "Public" : "Private")</p>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h4>No results found</h4>
+            <p>Try adjusting your search criteria or check your spelling.</p>
+        </div>
+    }
+}
+
+@code {
+    private SearchCriteria searchCriteria = new SearchCriteria();
+    private List<SearchResult> searchResults = new List<SearchResult>();
+    private List<CustomReviewType> availableCustomTypes = new List<CustomReviewType>();
+    private bool hasSearched = false;
+    private bool isSearching = false;
+    private int currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        currentUserId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+        await LoadAvailableCustomTypes();
+    }
+
+    private async Task LoadAvailableCustomTypes()
+    {
+        availableCustomTypes = await SearchService.GetAvailableCustomTypesAsync(currentUserId);
+    }
+
+    private async Task OnReviewTypeChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<ReviewType>(e.Value?.ToString(), out var selectedType))
+        {
+            searchCriteria.ReviewType = selectedType == ReviewType.None ? null : selectedType;
+            if (selectedType != ReviewType.Custom)
+            {
+                searchCriteria.CustomReviewTypeId = null;
+            }
+        }
+        else
+        {
+            searchCriteria.ReviewType = null;
+            searchCriteria.CustomReviewTypeId = null;
+        }
+    }
+
+    private async Task HandleSearch()
+    {
+        if (!searchCriteria.HasCriteria)
+        {
+            return;
+        }
+
+        isSearching = true;
+        StateHasChanged();
+
+        try
+        {
+            searchResults = await SearchService.SearchReviewsAsync(searchCriteria, currentUserId);
+            hasSearched = true;
+        }
+        catch (Exception ex)
+        {
+            // Handle error - you might want to show a toast or alert
+            Console.WriteLine($"Search error: {ex.Message}");
+        }
+        finally
+        {
+            isSearching = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchCriteria = new SearchCriteria();
+        searchResults.Clear();
+        hasSearched = false;
+        StateHasChanged();
+    }
+}
