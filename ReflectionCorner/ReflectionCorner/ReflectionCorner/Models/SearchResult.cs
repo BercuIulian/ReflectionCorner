@@ -1,4 +1,6 @@
-﻿namespace ReflectionCorner.Models
+﻿using System;
+
+namespace ReflectionCorner.Models
 {
     public class SearchResult
     {
@@ -7,10 +9,9 @@
         public string Content { get; set; }
         public int? Rating { get; set; }
         public DateTime CreatedAt { get; set; }
-        public bool IsPublic { get; set; }
         public string Username { get; set; }
-        public ReviewType Type { get; set; }
-        public string TypeDisplayName { get; set; }
-        public string? TVShowTitle { get; set; }
+        public string ReviewTypeName { get; set; }
+        public ReviewType ReviewType { get; set; }
+        public string? TVShowTitle { get; set; } // For episodes
     }
 }

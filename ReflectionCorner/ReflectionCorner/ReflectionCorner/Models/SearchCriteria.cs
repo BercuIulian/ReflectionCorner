@@ -4,20 +4,17 @@ namespace ReflectionCorner.Models
 {
     public class SearchCriteria
     {
+        [StringLength(100)]
+        public string? ReviewTitle { get; set; }
+
+        [StringLength(50)]
+        public string? ReviewType { get; set; }
+
         [StringLength(50)]
         public string? Username { get; set; }
 
-        public ReviewType? ReviewType { get; set; }
-
-        public int? CustomReviewTypeId { get; set; }
-
-        [StringLength(100)]
-        public string? Title { get; set; }
-
-        public bool HasCriteria =>
-            !string.IsNullOrWhiteSpace(Username) ||
-            ReviewType.HasValue ||
-            CustomReviewTypeId.HasValue ||
-            !string.IsNullOrWhiteSpace(Title);
+        public bool HasCriteria => !string.IsNullOrWhiteSpace(ReviewTitle) ||
+                                  !string.IsNullOrWhiteSpace(ReviewType) ||
+                                  !string.IsNullOrWhiteSpace(Username);
     }
 }
