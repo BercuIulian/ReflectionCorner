@@ -1,0 +1,215 @@
+﻿@page "/latest"
+@using ReflectionCorner.Models
+@using ReflectionCorner.Data
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@inject ApplicationDbContext Context
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="hero-section mb-5">
+    <div class="text-center">
+        <h1 class="display-4 fw-bold text-primary mb-3">Welcome to ReflectionCorner</h1>
+        <p class="lead text-muted">Discover and share your thoughts on movies, TV shows, episodes, and more!</p>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0">Latest Reviews</h2>
+    <div class="d-flex gap-2">
+        <select class="form-select form-select-sm" style="width: auto;" @onchange="OnFilterChanged">
+            <option value="">All Types</option>
+            <option value="Movie">Movies</option>
+            <option value="TVShow">TV Shows</option>
+            <option value="Episode">Episodes</option>
+        </select>
+        <select class="form-select form-select-sm" style="width: auto;" @onchange="OnSortChanged">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="rating">Highest Rated</option>
+        </select>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading latest reviews...</p>
+    </div>
+}
+else if (reviews.Any())
+{
+    <div class="row g-4">
+        @foreach (var review in reviews)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary rounded-pill">@GetReviewTypeDisplay(review)</span>
+                            @if (review.Type != ReviewType.TVShow && review.Rating.HasValue)
+                            {
+                                <div class="text-warning">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="@(i <= review.Rating ? "fas fa-star" : "far fa-star")"></i>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <h5 class="card-title mb-2">@review.Title</h5>
+
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-user me-1"></i>by @review.User.Username
+                        </p>
+
+                        @if (!string.IsNullOrEmpty(review.Content) && review.Type != ReviewType.TVShow)
+                        {
+                            <p class="card-text text-muted flex-grow-1">
+                                @(review.Content.Length > 100 ? review.Content.Substring(0, 100) + "..." : review.Content)
+                            </p>
+                        }
+
+                        <div class="mt-auto">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>@review.CreatedAt.ToString("MMM dd, yyyy")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>    
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-search fa-3x text-muted"></i>
+        </div>
+        <h4 class="text-muted">No Reviews Found</h4>
+        <p class="text-muted">Be the first to share a review!</p>
+        <a href="/add-review" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Your First Review
+        </a>
+    </div>
+}
+
+@code {
+    private List<Review> reviews = new List<Review>();
+    private bool isLoading = true;
+    private bool hasMoreReviews = false;
+    private const int maxReviews = 3; // Changed from pageSize = 12 to maxReviews = 3
+    private string selectedFilter = "";
+    private string selectedSort = "newest";
+    private int currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        currentUserId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+        await LoadReviews();
+    }
+
+    private async Task LoadReviews()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var query = Context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.CustomReviewType)
+                .AsNoTracking()
+                .Where(r => r.IsPublic && r.User.IsPublic); // Only public reviews from public users
+
+            // Apply filter
+            if (!string.IsNullOrEmpty(selectedFilter))
+            {
+                switch (selectedFilter)
+                {
+                    case "Movie":
+                        query = query.Where(r => r.Type == ReviewType.Movie);
+                        break;
+                    case "TVShow":
+                        query = query.Where(r => r.Type == ReviewType.TVShow);
+                        break;
+                    case "Episode":
+                        query = query.Where(r => r.Type == ReviewType.Episode);
+                        break;
+                    case "Custom":
+                        query = query.Where(r => r.Type == ReviewType.Custom);
+                        break;
+                }
+            }
+
+            // Apply sorting
+            switch (selectedSort)
+            {
+                case "newest":
+                    query = query.OrderByDescending(r => r.CreatedAt);
+                    break;
+                case "oldest":
+                    query = query.OrderBy(r => r.CreatedAt);
+                    break;
+                case "rating":
+                    query = query.OrderByDescending(r => r.Rating ?? 0).ThenByDescending(r => r.CreatedAt);
+                    break;
+            }
+
+            // Get total count to check if there are more reviews
+            var totalCount = await query.CountAsync();
+            hasMoreReviews = totalCount > maxReviews;
+
+            // Get only the first 3 reviews
+            reviews = await query
+                .Take(maxReviews)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reviews: {ex.Message}");
+            reviews = new List<Review>();
+            hasMoreReviews = false;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnFilterChanged(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value?.ToString() ?? "";
+        await LoadReviews();
+    }
+
+    private async Task OnSortChanged(ChangeEventArgs e)
+    {
+        selectedSort = e.Value?.ToString() ?? "newest";
+        await LoadReviews();
+    }
+
+    private string GetReviewTypeDisplay(Review review)
+    {
+        if (review.Type == ReviewType.Custom && review.CustomReviewType != null)
+        {
+            return review.CustomReviewType.Name;
+        }
+        return review.Type.ToString();
+    }
+}
