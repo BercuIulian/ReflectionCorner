@@ -6,86 +6,94 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
-<h3 class="text-2xl font-bold mb-4">Search Reviews</h3>
+<div class="container mt-5">
+    <h3 class="page-title">Search Reviews</h3>
 
-<div class="card bg-base-100 shadow-xl mb-6">
-    <div class="card-body">
-        <h4 class="card-title mb-4">Search Criteria</h4>
 
-        <EditForm Model="@searchCriteria" OnValidSubmit="HandleSearch">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div class="form-group">
-                    <label for="reviewTitle" class="form-label">Review Title</label>
-                    <InputText id="reviewTitle" @bind-Value="searchCriteria.ReviewTitle"
-                               class="form-control" placeholder="Enter review title..." />
-                </div>
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <h4 class="card-title mb-3">Search Criteria</h4>
 
-                <div class="form-group">
-                    <label for="reviewType" class="form-label">Review Type</label>
-                    <InputText id="reviewType" @bind-Value="searchCriteria.ReviewType"
-                               class="form-control" placeholder="e.g., Movie, TVShow, Episode..." />
-                </div>
+            <EditForm Model="@searchCriteria" OnValidSubmit="HandleSearch">
+                <DataAnnotationsValidator />
 
-                <div class="form-group">
-                    <label for="username" class="form-label">Username</label>
-                    <InputText id="username" @bind-Value="searchCriteria.Username"
-                               class="form-control" placeholder="Enter username..." />
-                </div>
-            </div>
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label for="reviewTitle" class="form-label"><strong>Review Title</strong></label>
+                        <InputText id="reviewTitle" @bind-Value="searchCriteria.ReviewTitle"
+                                   class="form-control form-input" placeholder="Enter review title..." />
+                    </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary" disabled="@isSearching">
-                    @if (isSearching)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        <span>Searching...</span>
-                    }
-                    else
-                    {
-                        <span>Search</span>
-                    }
-                </button>
-                <button type="button" class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
-            </div>
-        </EditForm>
-    </div>
-</div>
+                    <div class="col-md-4 mb-3">
+                        <label for="reviewType" class="form-label"><strong>Review Type</strong></label>
+                        <InputText id="reviewType" @bind-Value="searchCriteria.ReviewType"
+                                   class="form-control form-input" placeholder="e.g., Movie, TVShow..." />
+                    </div>
 
-@if (hasSearched)
-{
-    <div class="mb-4">
-        <h4>Search Results (@searchResults.Count found)</h4>
-    </div>
-
-    @if (searchResults.Any())
-    {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach (var result in searchResults)
-            {
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title">@result.Title</h2>
-                        <p><strong>By:</strong> @result.Username</p>
-                        <p><strong>Type:</strong> @result.ReviewTypeName</p>
-                        @if (result.ReviewType != ReviewType.TVShow)
-                        {
-                            <p><strong>Rating:</strong> @result.Rating/5</p>
-                            <p class="truncate">@result.Content</p>
-                        }
-                        <p><strong>Created:</strong> @result.CreatedAt.ToShortDateString()</p>
+                    <div class="col-md-4 mb-3">
+                        <label for="username" class="form-label"><strong>Username</strong></label>
+                        <InputText id="username" @bind-Value="searchCriteria.Username"
+                                   class="form-control form-input" placeholder="Enter username..." />
                     </div>
                 </div>
-            }
+
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-primary" disabled="@isSearching">
+                        @if (isSearching)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Searching...</span>
+                        }
+                        else
+                        {
+                            <span>Search</span>
+                        }
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+                </div>
+            </EditForm>
         </div>
-    }
-    else
+    </div>
+
+    @if (hasSearched)
     {
-        <div class="alert alert-info">
-            <h4>No Results Found</h4>
-            <p>No reviews match your search criteria. Try adjusting your search terms.</p>
+        <div class="mt-4">
+            <h5>Search Results (@searchResults.Count found)</h5>
         </div>
+
+        @if (searchResults.Any())
+        {
+            <div class="row g-3 mt-2">
+                @foreach (var result in searchResults)
+                {
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">@result.Title</h5>
+                                <p class="mb-1"><strong>By:</strong> @result.Username</p>
+                                <p class="mb-1"><strong>Type:</strong> @result.ReviewTypeName</p>
+                                @if (result.ReviewType != ReviewType.TVShow)
+                                {
+                                    <p class="mb-1"><strong>Rating:</strong> @result.Rating/5</p>
+                                    <p class="text-muted small mb-2">@result.Content</p>
+                                }
+                                <p class="text-muted small"><strong>Created:</strong> @result.CreatedAt.ToShortDateString()</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">
+                <strong>No Results Found:</strong> No reviews match your search criteria. Try adjusting your search terms.
+            </div>
+        }
     }
-}
+</div>
+
+
 
 @code {
     private SearchCriteria searchCriteria = new SearchCriteria();

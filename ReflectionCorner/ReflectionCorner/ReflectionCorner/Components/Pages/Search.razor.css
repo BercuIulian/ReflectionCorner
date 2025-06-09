@@ -1,0 +1,19 @@
+﻿.form-input {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+    .form-input:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}

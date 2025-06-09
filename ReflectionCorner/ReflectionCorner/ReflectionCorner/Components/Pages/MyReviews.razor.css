@@ -1,0 +1,84 @@
+﻿.page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.review-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.review-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.review-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+    text-align: center;
+}
+
+.review-meta {
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+}
+
+.review-content {
+    font-size: 0.9rem;
+    color: #444;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    white-space: pre-wrap; /* preserves line breaks */
+    word-break: break-word; /* wraps long words */
+    margin-top: 0.5rem;
+}
+
+.review-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem; /* Increase gap between buttons */
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.edit-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+    .edit-btn:hover {
+        background-color: #0056b3;
+    }
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+    .delete-btn:hover {
+        background-color: #a71d2a;
+    }

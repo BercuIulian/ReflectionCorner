@@ -8,111 +8,118 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<h2 class="mb-4">@((ReviewId.HasValue ? "Edit" : "Add") + " Review")</h2>
+<h3 class="section-title">@((ReviewId.HasValue ? "Edit" : "Add") + " Review")</h3>
 
-<EditForm Model="@review" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
 
-    @if (!ReviewId.HasValue)
-    {
-        <div class="form-group mb-3">
-            <label for="type" class="form-label">Type</label>
-            <InputSelect id="type" @bind-Value="review.Type" class="form-control" @onchange="OnTypeChanged">
-                <option value="@ReviewType.None">Select a type</option>
-                <option value="@ReviewType.Movie">Movie</option>
-                <option value="@ReviewType.TVShow">TV Show</option>
-                <option value="@ReviewType.Episode">Episode</option>
-                <option value="@ReviewType.Custom">Custom Type</option>
-            </InputSelect>
-        </div>
 
-        @if (review.Type == ReviewType.Custom)
+<div class="review-form-container">
+    <EditForm Model="@review" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!ReviewId.HasValue)
         {
             <div class="form-group mb-3">
-                <label for="customType" class="form-label">Custom Review Type</label>
-                <InputSelect id="customType" @bind-Value="review.CustomReviewTypeId" class="form-control">
-                    <option value="">Select a custom type</option>
-                    @foreach (var customType in customReviewTypes)
+                <label for="type" class="form-label">Type</label>
+                <InputSelect id="type" @bind-Value="review.Type" class="form-control" @onchange="OnTypeChanged">
+                    <option value="@ReviewType.None">Select a type</option>
+                    <option value="@ReviewType.Movie">Movie</option>
+                    <option value="@ReviewType.TVShow">TV Show</option>
+                    <option value="@ReviewType.Episode">Episode</option>
+                    <option value="@ReviewType.Custom">Custom Type</option>
+                </InputSelect>
+            </div>
+
+            @if (review.Type == ReviewType.Custom)
+            {
+                <div class="form-group mb-3">
+                    <label for="customType" class="form-label">Custom Review Type</label>
+                    <InputSelect id="customType" @bind-Value="review.CustomReviewTypeId" class="form-control">
+                        <option value="">Select a custom type</option>
+                        @foreach (var customType in customReviewTypes)
+                        {
+                            <option value="@customType.Id">@customType.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+        }
+
+        @if (review.Type == ReviewType.Movie || review.Type == ReviewType.Custom || (ReviewId.HasValue && review.Type != ReviewType.TVShow))
+        {
+            <div class="form-group mb-3">
+                <label for="title" class="form-label">Title</label>
+                <InputText id="title" @bind-Value="review.Title" class="form-control" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="content" class="form-label">Review</label>
+                <InputTextArea id="content" @bind-Value="review.Content" class="form-control" rows="5" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Rating</label>
+                <StarRating @bind-Value="review.Rating" />
+            </div>
+        }
+        else if (review.Type == ReviewType.TVShow)
+        {
+            <div class="form-group mb-3">
+                <label for="tvShowName" class="form-label">TV Show Name</label>
+                <InputText id="tvShowName" @bind-Value="review.Title" class="form-control" />
+            </div>
+        }
+        else if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
+        {
+            <div class="form-group mb-3">
+                <label for="tvShowSelect" class="form-label">TV Show</label>
+                <InputSelect id="tvShowSelect" @bind-Value="review.ParentId" class="form-control">
+                    <option value="">Select a TV Show</option>
+                    @foreach (var tvShow in tvShows)
                     {
-                        <option value="@customType.Id">@customType.Name</option>
+                        <option value="@tvShow.Id">@tvShow.Title</option>
                     }
                 </InputSelect>
             </div>
+
+            <div class="form-group mb-3">
+                <label for="episodeName" class="form-label">Episode Name</label>
+                <InputText id="episodeName" @bind-Value="review.Title" class="form-control" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="episodeNumber" class="form-label">Episode Number</label>
+                <InputNumber id="episodeNumber" @bind-Value="episodeNumber" class="form-control" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="episodeReview" class="form-label">Review</label>
+                <InputTextArea id="episodeReview" @bind-Value="review.Content" class="form-control" rows="5" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Rating</label>
+                <StarRating @bind-Value="review.Rating" />
+            </div>
         }
-    }
 
-    @if (review.Type == ReviewType.Movie || review.Type == ReviewType.Custom || (ReviewId.HasValue && review.Type != ReviewType.TVShow))
-    {
-        <div class="form-group mb-3">
-            <label for="title" class="form-label">Title</label>
-            <InputText id="title" @bind-Value="review.Title" class="form-control" />
-        </div>
+        @if (review.Type != ReviewType.None)
+        {
+            <div class="form-group form-check mb-4">
+                <InputCheckbox id="isPublic" class="form-check-input" @bind-Value="review.IsPublic" />
+                <label for="isPublic" class="form-check-label">Make review public</label>
+            </div>
 
-        <div class="form-group mb-3">
-            <label for="content" class="form-label">Review</label>
-            <InputTextArea id="content" @bind-Value="review.Content" class="form-control" rows="5" />
-        </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+            </div>
+        }
+    </EditForm>
+</div>
 
-        <div class="form-group mb-3">
-            <label class="form-label d-block">Rating</label>
-            <StarRating @bind-Value="review.Rating" />
-        </div>
-    }
-    else if (review.Type == ReviewType.TVShow)
-    {
-        <div class="form-group mb-3">
-            <label for="tvShowName" class="form-label">TV Show Name</label>
-            <InputText id="tvShowName" @bind-Value="review.Title" class="form-control" />
-        </div>
-    }
-    else if (review.Type == ReviewType.Episode && !ReviewId.HasValue)
-    {
-        <div class="form-group mb-3">
-            <label for="tvShowSelect" class="form-label">TV Show</label>
-            <InputSelect id="tvShowSelect" @bind-Value="review.ParentId" class="form-control">
-                <option value="">Select a TV Show</option>
-                @foreach (var tvShow in tvShows)
-                {
-                    <option value="@tvShow.Id">@tvShow.Title</option>
-                }
-            </InputSelect>
-        </div>
 
-        <div class="form-group mb-3">
-            <label for="episodeName" class="form-label">Episode Name</label>
-            <InputText id="episodeName" @bind-Value="review.Title" class="form-control" />
-        </div>
 
-        <div class="form-group mb-3">
-            <label for="episodeNumber" class="form-label">Episode Number</label>
-            <InputNumber id="episodeNumber" @bind-Value="episodeNumber" class="form-control" />
-        </div>
-
-        <div class="form-group mb-3">
-            <label for="episodeReview" class="form-label">Review</label>
-            <InputTextArea id="episodeReview" @bind-Value="review.Content" class="form-control" rows="5" />
-        </div>
-
-        <div class="form-group mb-3">
-            <label class="form-label d-block">Rating</label>
-            <StarRating @bind-Value="review.Rating" />
-        </div>
-    }
-
-    @if (review.Type != ReviewType.None)
-    {
-        <div class="form-group form-check mb-4">
-            <InputCheckbox id="isPublic" class="form-check-input" @bind-Value="review.IsPublic" />
-            <label for="isPublic" class="form-check-label">Make review public</label>
-        </div>
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-        </div>
-    }
-</EditForm>
 
 @code {
     [Parameter]

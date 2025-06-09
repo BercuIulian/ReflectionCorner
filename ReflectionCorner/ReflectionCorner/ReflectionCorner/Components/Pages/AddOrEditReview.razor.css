@@ -1,0 +1,75 @@
+﻿.review-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control,
+.form-check-input {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+}
+
+.form-check-label {
+    margin-left: 0.5rem;
+}
+
+.d-flex.gap-2 {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn {
+    min-width: 100px;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: #10b981;
+    color: white;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #e5e7eb;
+    color: #111827;
+    border: none;
+}
+
+@media (max-width: 640px) {
+    .review-form-container {
+        padding: 1rem 0.5rem;
+    }
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}

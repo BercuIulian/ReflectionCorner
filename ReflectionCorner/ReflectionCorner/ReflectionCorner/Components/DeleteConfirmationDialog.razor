@@ -1,45 +1,54 @@
 ﻿@inject IJSRuntime JSRuntime
 
-<div class="modal" tabindex="-1" role="dialog" style="display:block; background-color: rgba(0,0,0,0.5);">
-    <div class="modal-dialog" role="document">
+<div class="modal-overlay">
+    <div class="modal-dialog-compact">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Profile</h5>
-                <button type="button" class="close" @onclick="OnCancel" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            <div class="modal-header custom-modal-header">
+                <h5 class="modal-title mb-0">Delete Profile</h5>
+                <button type="button" class="custom-close-btn" @onclick="OnCancel" aria-label="Close">
+                    &times;
                 </button>
+
             </div>
+
             <div class="modal-body">
                 @if (!passwordVerified)
                 {
-                    <div class="form-group">
-                        <label for="password">Please enter your password to confirm:</label>
-                        <input type="password" class="form-control" id="password" @bind="password" />
-                    </div>
+                    <label class="form-label" for="password">Enter your password to confirm:</label>
+                    <input type="password" class="form-control form-control-sm mb-2" id="password" @bind="password" />
+
                     @if (!string.IsNullOrEmpty(ErrorMessage))
                     {
-                        <div class="alert alert-danger" role="alert">
-                            @ErrorMessage
-                        </div>
+                        <div class="alert alert-danger py-1 px-2 small mb-2">@ErrorMessage</div>
                     }
-                    <button class="btn btn-primary" @onclick="VerifyPassword">Verify</button>
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <button class="btn btn-sm btn-primary w-100 me-2" @onclick="VerifyPassword">Verify</button>
+                        <button type="button" class="btn btn-sm btn-secondary" @onclick="OnCancel">Cancel</button>
+                    </div>
                 }
+
                 else
                 {
-                    <p>Warning: By pressing confirm, all your data related to this account will be deleted. This action cannot be undone.</p>
-                    <p>Press confirm to continue or cancel to cancel the action.</p>
+                    <p class="small text-danger mb-2">
+                        This action will permanently delete your account and all associated data.
+                    </p>
+                    <p class="small">Press <strong>Confirm</strong> to proceed or <strong>Cancel</strong> to abort.</p>
                 }
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+
+            <div class="modal-footer justify-content-between py-2">                
                 @if (passwordVerified)
                 {
-                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Confirm</button>
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="ConfirmDelete">Confirm</button>
+
+                    <button type="button" class="btn btn-sm btn-secondary" @onclick="OnCancel">Cancel</button>
                 }
             </div>
         </div>
     </div>
 </div>
+
 
 @code {
     [Parameter] public EventCallback OnConfirm { get; set; }

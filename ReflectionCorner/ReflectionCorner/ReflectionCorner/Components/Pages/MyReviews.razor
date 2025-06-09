@@ -8,30 +8,31 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-<h3 class="text-2xl font-bold mb-4">My Reviews</h3>
+<h3 class="page-title">My Reviews</h3>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="review-grid">
     @foreach (var review in reviews)
     {
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title">@review.Title</h2>
-                <p>Type: @GetReviewTypeDisplay(review)</p>
-                @if (review.Type != ReviewType.TVShow)
-                {
-                    <p>Rating: @review.Rating/5</p>
-                    <p class="truncate">@review.Content</p>
-                }
-                <p>Created: @review.CreatedAt.ToShortDateString()</p>
-                <p>Visibility: @(review.IsPublic ? "Public" : "Private")</p>
-                <div class="card-actions justify-end mt-4">
-                    <button class="btn btn-primary" @onclick="() => EditReview(review.Id)">Edit</button>
-                    <button class="btn btn-error" @onclick="() => ConfirmDelete(review.Id)">Delete</button>
-                </div>
+        <div class="review-card">
+            <h4 class="review-title">@review.Title</h4>
+            <p><strong>Type:</strong> @GetReviewTypeDisplay(review)</p>
+            @if (review.Type != ReviewType.TVShow)
+            {
+                <p><strong>Rating:</strong> @review.Rating/5</p>
+                <p class="review-content">@review.Content</p>
+            }
+            <p><strong>Created:</strong> @review.CreatedAt.ToShortDateString()</p>
+            <p><strong>Visibility:</strong> @(review.IsPublic ? "Public" : "Private")</p>
+
+
+            <div class="review-actions">
+                <button class="btn edit-btn" @onclick="() => EditReview(review.Id)">Edit</button>
+                <button class="btn delete-btn" @onclick="() => ConfirmDelete(review.Id)">Delete</button>
             </div>
         </div>
     }
 </div>
+
 
 @if (showDeleteConfirmation)
 {

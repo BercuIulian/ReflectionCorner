@@ -7,34 +7,37 @@
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
 
-<div class="container mt-4">
-    <h2 class="mb-4">Your Profile</h2>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">@($"{currentUser?.FirstName ?? ""} {currentUser?.LastName ?? ""}")</h5>
-            <p class="card-text"><strong>Username:</strong> @username</p>
-            <p class="card-text"><strong>Email:</strong> @email</p>
-            <p class="card-text"><strong>Contact:</strong> @(currentUser?.Contact ?? "Not provided")</p>
-            <p class="card-text"><strong>Profile Status:</strong> @(currentUser?.IsPublic == true ? "Public" : "Private")</p>
+<div class="home-page">
+    <div class="profile-container">
+        <h2 class="profile-title">Your Profile</h2>
 
-            <div class="d-flex justify-content-start mt-3 gap-2">
+        <div class="profile-card">
+            <h5 class="mb-3">@($"{currentUser?.FirstName ?? ""} {currentUser?.LastName ?? ""}")</h5>
+            <p class="profile-field"><span class="profile-label">Usernames:</span> @username</p>
+            <p class="profile-field"><span class="profile-label">Email:</span> @email</p>
+            <p class="profile-field"><span class="profile-label">Contact:</span> @(currentUser?.Contact ?? "Not provided")</p>
+            <p class="profile-field"><span class="profile-label">Profile Status:</span> @(currentUser?.IsPublic == true ? "Public" : "Private")</p>
+
+            <div class="profile-actions">
                 <button class="btn btn-primary" @onclick="NavigateToEditProfile">Edit Profile</button>
-                <button class="btn btn-danger" @onclick="ShowDeleteConfirmation">Delete Profile</button>
+                <button class="btn btn-danger-red" @onclick="ShowDeleteConfirmation">Delete Profile</button>
             </div>
         </div>
-    </div>
 
-    @if (showDeleteConfirmation)
-    {
-        <div class="mt-4">
-            <DeleteConfirmationDialog OnConfirm="DeleteProfile"
-                                      OnCancel="CancelDelete"
-                                      OnPasswordVerify="VerifyPassword"
-                                      ErrorMessage="@errorMessage" />
-        </div>
-    }
+        @if (showDeleteConfirmation)
+        {
+            <div class="mt-4">
+                <DeleteConfirmationDialog OnConfirm="DeleteProfile"
+                                          OnCancel="CancelDelete"
+                                          OnPasswordVerify="VerifyPassword"
+                                          ErrorMessage="@errorMessage" />
+            </div>
+        }
+    </div>
 </div>
+
+
 
 @code {
     private string username = "";

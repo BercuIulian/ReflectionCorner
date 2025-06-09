@@ -1,0 +1,69 @@
+﻿/* Clean, modern input styles */
+input.form-control,
+textarea.form-control {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    width: 100%;
+}
+
+    input.form-control:focus,
+    textarea.form-control:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+    }
+
+/* Checkbox spacing fix */
+.form-check-input {
+    margin-right: 0.5rem;
+    transform: scale(1.1);
+}
+
+/* Optional: card padding enhancement */
+.card-body {
+    padding: 2rem;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+.profile-card {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Optional: form inputs */
+input.form-control,
+textarea.form-control {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+    input.form-control:focus,
+    textarea.form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }

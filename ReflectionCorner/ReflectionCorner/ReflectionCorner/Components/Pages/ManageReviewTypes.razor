@@ -8,55 +8,54 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-<h3 class="text-2xl font-bold mb-4">Manage Review Types</h3>
-
-<div class="mb-4">
-    <button class="btn btn-primary" @onclick="ShowAddForm">Add New Review Type</button>
+<h3 class="page-title">Manage Review Types</h3>
+<div class="header-bar">    
+    <button class="btn add-btn" @onclick="ShowAddForm">Add New Review Type</button>
 </div>
+
 
 @if (showAddForm)
 {
-    <div class="card bg-base-100 shadow-xl mb-4">
-        <div class="card-body">
-            <h4 class="card-title">Add New Review Type</h4>
-            <EditForm Model="@newReviewType" OnValidSubmit="AddReviewType">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
+    <div class="card-form">
+        <h4 class="form-title">Add New Review Type</h4>
+        <EditForm Model="@newReviewType" OnValidSubmit="AddReviewType">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-                <div class="form-group mb-3">
-                    <label for="name" class="form-label">Name:</label>
-                    <InputText id="name" @bind-Value="newReviewType.Name" class="form-control" />
-                </div>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <InputText id="name" @bind-Value="newReviewType.Name" class="form-input" />
+            </div>
 
-                <div class="form-group mb-3">
-                    <label for="description" class="form-label">Description:</label>
-                    <InputTextArea id="description" @bind-Value="newReviewType.Description" class="form-control" rows="3" />
-                </div>
+            <div class="form-group">
+                <label for="desc">Description:</label>
+                <InputText id="desc" @bind-Value="newReviewType.Description" class="form-input" rows="3" />
+            </div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Add</button>
-                    <button type="button" class="btn btn-secondary" @onclick="CancelAdd">Cancel</button>
-                </div>
-            </EditForm>
-        </div>
+            <div class="form-actions">
+                <button type="submit" class="btn save-btn">Save</button>
+                <button type="button" class="btn cancel-btn" @onclick="CancelAdd">Cancel</button>
+            </div>
+        </EditForm>
     </div>
 }
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+<div class="review-grid">
     @foreach (var reviewType in customReviewTypes)
     {
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title">@reviewType.Name</h2>
-                <p>@reviewType.Description</p>
-                <p>Created: @reviewType.CreatedAt.ToShortDateString()</p>
-                <div class="card-actions justify-end">
-                    <button class="btn btn-error btn-sm" @onclick="() => DeleteReviewType(reviewType.Id)">Delete</button>
-                </div>
+        <div class="review-card">
+            <h4 class="review-title">@reviewType.Name</h4>
+            <p class="truncate">@reviewType.Description</p>
+            <p><strong>Created:</strong> @reviewType.CreatedAt.ToShortDateString()</p>
+
+            <div class="review-actions">
+                <button class="btn delete-btn" @onclick="() => DeleteReviewType(reviewType.Id)">Delete</button>
             </div>
         </div>
     }
 </div>
+
 
 @code {
     private List<CustomReviewType> customReviewTypes = new List<CustomReviewType>();

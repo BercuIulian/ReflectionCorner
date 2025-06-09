@@ -2,9 +2,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 75vh;
-    background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
+    height: 55vh;
+    border-radius: 46px;
+    background: linear-gradient(135deg, #6a6fff 30%, #b402ff 100%);
     padding: 1rem;
+    margin-top: 12%;
 }
 
 .welcome-card {
